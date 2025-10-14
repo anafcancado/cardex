@@ -1,31 +1,109 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Welcome from "./pages/Welcome";
-import Home from "./pages/home";
-import CameraCapture from "./pages/CameraCapture";
-import Cardex from "./pages/Cardex";
-import ResultScreen from "./pages/ResultScreen";
+import { useState, useRef } from "react";
+import { BrowserRouter as Router, Routes, Route, useNavigate } from "react-router-dom";
+import WelcomePage from "./pages/WelcomePage";
+import HomePage from "./pages/HomePage";
+import CameraPage from "./pages/CameraPage";
+import ResultPage from "./pages/ResultPage";
+import CardexPage from "./pages/CardexPage";
+import { identifyCar } from "./services/aiService";
 
-function App() {
+function AppContent() {
+  const [capturedCars, setCapturedCars] = useState([]);
+  const [screenshot, setScreenshot] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const videoRef = useRef(null);
+  const [stream, setStream] = useState(null);
+  const [filter, setFilter] = useState("descobertos");
+  
+  const navigate = useNavigate();
+
+  const goTo = (page) => {
+    navigate(`/${page}`);
+  };
+
+  const startCamera = async () => {
+    try {
+      const mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
+      setStream(mediaStream);
+      if (videoRef.current) {
+        videoRef.current.srcObject = mediaStream;
+      }
+    } catch (error) {
+      console.error("Erro ao acessar a câmera:", error);
+    }
+  };
+
+  const stopCamera = () => {
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+      setStream(null);
+    }
+  };
+
+  const takePhoto = () => {
+    if (!videoRef.current) return;
+
+    const canvas = document.createElement("canvas");
+    canvas.width = videoRef.current.videoWidth;
+    canvas.height = videoRef.current.videoHeight;
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+    const imgData = canvas.toDataURL("image/png");
+    setScreenshot(imgData);
+    stopCamera();
+  };
+
+  const retakePhoto = () => {
+    setScreenshot(null);
+    startCamera();
+  };
+
+  const confirmPhoto = async () => {
+    setLoading(true);
+    try {
+      const result = await identifyCar(screenshot);
+      setCapturedCars(prevCars => [...prevCars, { ...result, id: Date.now() }]);
+      goTo("result");
+    } catch (error) {
+      console.error("Erro ao identificar carro:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const commonProps = {
+    goTo,
+    screenshot,
+    setScreenshot,
+    startCamera,
+    stopCamera,
+    takePhoto,
+    retakePhoto,
+    confirmPhoto,
+    capturedCars,
+    setCapturedCars,
+    loading,
+    filter,
+    setFilter,
+    videoRef
+  };
+
   return (
-    <Router>
-      {/* full viewport bg and center the phone mockup */}
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center p-6">
-        {/* phone frame: give a dark inner background and default white text so pages are readable */}
-        <div className="phone-frame w-[390px] h-[844px] bg-[#073b5a] rounded-3xl shadow-2xl">
-          {/* inner area where routes render; allow scrolling inside the phone frame; inherit white text by default */}
-          <div className="h-full overflow-auto">
-            <Routes>
-              <Route path="/" element={<Welcome />} />
-              <Route path="/home" element={<Home />} />
-              <Route path="/camera" element={<CameraCapture />} />
-              <Route path="/result" element={<ResultScreen />} />
-              <Route path="/cardex" element={<Cardex />} />
-            </Routes>
-          </div>
-        </div>
-      </div>
-    </Router>
+    <Routes>
+      <Route path="/" element={<WelcomePage {...commonProps} />} />
+      <Route path="/welcome" element={<WelcomePage {...commonProps} />} />
+      <Route path="/home" element={<HomePage {...commonProps} />} />
+      <Route path="/camera" element={<CameraPage {...commonProps} />} />
+      <Route path="/result" element={<ResultPage {...commonProps} />} />
+      <Route path="/cardex" element={<CardexPage {...commonProps} />} />
+    </Routes>
   );
 }
 
-export default App;
+export default function App() {
+  return (
+    <Router>
+      <AppContent />
+    </Router>
+  );
+}

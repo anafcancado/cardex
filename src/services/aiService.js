@@ -1,4 +1,3 @@
-// Simulação de IA (mock)
 export async function identifyCar(imageBase64) {
   console.log("Imagem recebida:", (imageBase64 || "").substring(0, 30) + "...");
 
