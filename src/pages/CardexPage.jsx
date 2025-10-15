@@ -54,7 +54,9 @@ export default function CardexPage({ goTo, capturedCars, filter, setFilter }) {
                 <p style={styles.carYear}>{carro.ano || "Desconhecido"}</p>
                 {"confianca" in carro && (
                   <p style={{ fontSize: '12px', color: '#93c5fd' }}>
-                    Confiança: {carro.confianca.toFixed(2)}%
+                    Confiança: {typeof carro.confianca === "number"
+                      ? carro.confianca.toFixed(2) + "%"
+                      : "Desconhecido"}
                   </p>
                 )}
               </div>

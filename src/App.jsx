@@ -65,7 +65,18 @@ function AppContent() {
     try {
       const result = await identifyCar(screenshot);
       console.log("Resultado da API:", result);
-      setCapturedCars(prevCars => [...prevCars, { ...result, id: Date.now() }]);
+      setCapturedCars(prevCars => {
+        const alreadyExists = prevCars.some(
+          car =>
+            car.marca === result.marca &&
+            car.modelo === result.modelo &&
+            car.ano === result.ano
+        );
+        if (alreadyExists) {
+          return prevCars;
+        }
+        return [...prevCars, result];
+      });
       goTo("result");
     } catch (error) {
       console.error("Erro ao identificar carro:", error);
