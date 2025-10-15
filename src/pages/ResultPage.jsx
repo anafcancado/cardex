@@ -27,7 +27,10 @@ export default function ResultPage({ goTo, capturedCars }) {
       <div style={styles.carInfo}>
         <p><strong>Marca:</strong> {lastCapturedCar.marca}</p>
         <p><strong>Modelo:</strong> {lastCapturedCar.modelo}</p>
-        <p><strong>Ano:</strong> {lastCapturedCar.ano}</p>
+        <p><strong>Ano:</strong> {lastCapturedCar.ano || "Desconhecido"}</p>
+        {"confianca" in lastCapturedCar && (
+          <p><strong>Confiança:</strong> {lastCapturedCar.confianca.toFixed(2)}%</p>
+        )}
       </div>
 
       <button onClick={() => goTo("home")} style={styles.button}>

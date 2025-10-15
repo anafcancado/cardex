@@ -11,6 +11,7 @@ function AppContent() {
   const [capturedCars, setCapturedCars] = useState([]);
   const [screenshot, setScreenshot] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const videoRef = useRef(null);
   const [stream, setStream] = useState(null);
   const [filter, setFilter] = useState("descobertos");
@@ -60,12 +61,15 @@ function AppContent() {
 
   const confirmPhoto = async () => {
     setLoading(true);
+    setError(null);
     try {
       const result = await identifyCar(screenshot);
+      console.log("Resultado da API:", result);
       setCapturedCars(prevCars => [...prevCars, { ...result, id: Date.now() }]);
       goTo("result");
     } catch (error) {
       console.error("Erro ao identificar carro:", error);
+      setError("Erro ao identificar carro. Tente novamente.");
     } finally {
       setLoading(false);
     }
@@ -89,14 +93,28 @@ function AppContent() {
   };
 
   return (
-    <Routes>
-      <Route path="/" element={<WelcomePage {...commonProps} />} />
-      <Route path="/welcome" element={<WelcomePage {...commonProps} />} />
-      <Route path="/home" element={<HomePage {...commonProps} />} />
-      <Route path="/camera" element={<CameraPage {...commonProps} />} />
-      <Route path="/result" element={<ResultPage {...commonProps} />} />
-      <Route path="/cardex" element={<CardexPage {...commonProps} />} />
-    </Routes>
+    <>
+      {error && (
+        <div style={{
+          background: "#fee2e2",
+          color: "#991b1b",
+          padding: "12px",
+          borderRadius: "8px",
+          margin: "16px",
+          textAlign: "center"
+        }}>
+          {error}
+        </div>
+      )}
+      <Routes>
+        <Route path="/" element={<WelcomePage {...commonProps} />} />
+        <Route path="/welcome" element={<WelcomePage {...commonProps} />} />
+        <Route path="/home" element={<HomePage {...commonProps} />} />
+        <Route path="/camera" element={<CameraPage {...commonProps} />} />
+        <Route path="/result" element={<ResultPage {...commonProps} />} />
+        <Route path="/cardex" element={<CardexPage {...commonProps} />} />
+      </Routes>
+    </>
   );
 }
 

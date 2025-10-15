@@ -51,7 +51,12 @@ export default function CardexPage({ goTo, capturedCars, filter, setFilter }) {
                 </div>
                 <p><strong>{carro.marca}</strong></p>
                 <p style={styles.carModel}>{carro.modelo}</p>
-                <p style={styles.carYear}>{carro.ano}</p>
+                <p style={styles.carYear}>{carro.ano || "Desconhecido"}</p>
+                {"confianca" in carro && (
+                  <p style={{ fontSize: '12px', color: '#93c5fd' }}>
+                    Confiança: {carro.confianca.toFixed(2)}%
+                  </p>
+                )}
               </div>
             ))}
           </div>
