@@ -174,17 +174,6 @@ const styles = {
   uploadIcon: {
     marginRight: '4px'
   },
-  separator: {
-    display: 'flex',
-    alignItems: 'center',
-    margin: '16px 0'
-  },
-  separator: {
-    display: 'flex',
-    alignItems: 'center',
-    margin: '16px 0',
-    position: 'relative'
-  },
   separatorText: {
     color: '#bfdbfe',
     fontSize: '14px',

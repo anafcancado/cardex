@@ -69,15 +69,15 @@ function AppContent() {
         const alreadyExists = prevCars.some(
           car =>
             car.marca === result.marca &&
-            car.modelo === result.modelo &&
-            car.ano === result.ano
+            car.modelo === result.modelo
         );
         if (alreadyExists) {
+          alert("Este carro já foi identificado anteriormente!");
           return prevCars;
         }
+        goTo("result");
         return [...prevCars, result];
       });
-      goTo("result");
     } catch (error) {
       console.error("Erro ao identificar carro:", error);
       setError("Erro ao identificar carro. Tente novamente.");

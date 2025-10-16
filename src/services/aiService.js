@@ -47,7 +47,6 @@ export async function identifyCar(imageBase64) {
     id: Date.now().toString(),
     marca: pred.brand,
     modelo: pred.model,
-    ano: "", // API does not return year
     imagem: imageBase64 || null,
     confianca: typeof pred.confidence === "number" ? pred.confidence : pred.confidence_percent,
   };
