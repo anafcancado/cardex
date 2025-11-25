@@ -3,21 +3,26 @@ import { useState, useEffect } from "react";
 export default function ResultPage({ goTo, capturedCars }) {
   const [showResult, setShowResult] = useState(false);
   const [shake, setShake] = useState(false);
-  const lastCapturedCar = capturedCars.length > 0 ? capturedCars[capturedCars.length - 1] : null;
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  const lastCars = capturedCars.length > 0 ? capturedCars.slice(-10) : [];
+  const currentCar = lastCars[currentIndex];
 
   useEffect(() => {
     setShowResult(false);
     setShake(false);
-    // 1s shake, 1s brilho, depois mostra resultado
+    setCurrentIndex(0);
+
     const shakeTimer = setTimeout(() => setShake(true), 500);
     const resultTimer = setTimeout(() => setShowResult(true), 2000);
+    
     return () => {
       clearTimeout(shakeTimer);
       clearTimeout(resultTimer);
     };
-  }, [lastCapturedCar]);
+  }, [capturedCars]);
 
-  if (!lastCapturedCar) {
+  if (!currentCar) {
     return (
       <div style={styles.emptyContainer}>
         <p>Nenhum carro identificado.</p>
@@ -27,6 +32,14 @@ export default function ResultPage({ goTo, capturedCars }) {
       </div>
     );
   }
+
+  const handlePrevious = () => {
+    setCurrentIndex((prev) => (prev > 0 ? prev - 1 : lastCars.length - 1));
+  };
+
+  const handleNext = () => {
+    setCurrentIndex((prev) => (prev < lastCars.length - 1 ? prev + 1 : 0));
+  };
 
   return (
     <div style={styles.container}>
@@ -44,37 +57,77 @@ export default function ResultPage({ goTo, capturedCars }) {
             <div className="ball-sparkle"></div>
           </div>
           <p className="capturing-text">
-            <span className="capturing-text-anim">Capturando...</span>
+            <span className="capturing-text-anim">
+              Capturando {lastCars.length} carro{lastCars.length !== 1 ? 's' : ''}...
+            </span>
           </p>
         </div>
       ) : (
         <>
-          <h1 style={styles.title}>Carro Identificado!</h1>
+          <h1 style={styles.title}>Carros Identificados!</h1>
 
-          {lastCapturedCar.imagem && (
+          {/* Indicador de progresso */}
+          {lastCars.length > 1 && (
+            <p style={styles.counter}>
+              {currentIndex + 1} de {lastCars.length}
+            </p>
+          )}
+
+          {currentCar.imagem && (
             <img
-              src={lastCapturedCar.imagem}
+              src={currentCar.imagem}
               alt="Carro capturado"
               style={styles.carImage}
             />
           )}
 
           <div style={styles.carInfo}>
-            <p><strong>Marca:</strong> {lastCapturedCar.marca || "Desconhecido"}</p>
-            <p><strong>Modelo:</strong> {lastCapturedCar.modelo || "Desconhecido"}</p>
-            <p><strong>Ano:</strong> {lastCapturedCar.ano || "Desconhecido"}</p>
-            {"confianca" in lastCapturedCar && (
+            <p><strong>Marca:</strong> {currentCar.marca || "Desconhecido"}</p>
+            <p><strong>Modelo:</strong> {currentCar.modelo || "Desconhecido"}</p>
+            <p><strong>Ano:</strong> {currentCar.ano || "Desconhecido"}</p>
+            {"confianca" in currentCar && (
               <p>
                 <strong>Confiança:</strong>{" "}
-                {typeof lastCapturedCar.confianca === "number"
-                  ? lastCapturedCar.confianca.toFixed(2) + "%"
+                {typeof currentCar.confianca === "number"
+                  ? currentCar.confianca.toFixed(2) + "%"
                   : "Desconhecido"}
               </p>
             )}
           </div>
 
+          {/* Navegação entre carros */}
+          {lastCars.length > 1 && (
+            <div style={styles.navigationContainer}>
+              <button onClick={handlePrevious} style={styles.navButton}>
+                ← Anterior
+              </button>
+              <div style={styles.thumbnailContainer}>
+                {lastCars.map((car, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setCurrentIndex(idx)}
+                    style={{
+                      ...styles.thumbnail,
+                      border: idx === currentIndex ? '3px solid #3b82f6' : '2px solid rgba(255,255,255,0.3)',
+                      opacity: idx === currentIndex ? 1 : 0.6
+                    }}
+                  >
+                    {car.imagem ? (
+                      <img src={car.imagem} alt={`Carro ${idx + 1}`} style={styles.thumbnailImage} />
+                    ) : (
+                      <div style={styles.thumbnailPlaceholder}>?</div>
+                    )}
+                  </button>
+                ))}
+              </div>
+              <button onClick={handleNext} style={styles.navButton}>
+                Próximo →
+              </button>
+            </div>
+          )}
+
           <button onClick={() => goTo("home")} style={styles.button}>
-            Capturar Outro
+            Capturar Mais
           </button>
         </>
       )}
@@ -91,7 +144,8 @@ const styles = {
     flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: '24px'
+    padding: '24px',
+    overflowY: 'auto'
   },
   emptyContainer: {
     height: '100vh',
@@ -105,6 +159,11 @@ const styles = {
   title: {
     fontSize: '28px',
     fontWeight: 'bold',
+    marginBottom: '8px'
+  },
+  counter: {
+    fontSize: '14px',
+    color: '#bfdbfe',
     marginBottom: '16px'
   },
   carImage: {
@@ -121,6 +180,58 @@ const styles = {
     width: '100%',
     maxWidth: '320px',
     marginBottom: '24px'
+  },
+  navigationContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '12px',
+    marginBottom: '24px',
+    width: '100%',
+    maxWidth: '500px'
+  },
+  navButton: {
+    background: 'rgba(255, 255, 255, 0.1)',
+    color: 'white',
+    border: '1px solid rgba(255, 255, 255, 0.2)',
+    borderRadius: '9999px',
+    padding: '8px 12px',
+    cursor: 'pointer',
+    fontSize: '14px',
+    transition: 'all 0.2s'
+  },
+  thumbnailContainer: {
+    display: 'flex',
+    gap: '8px',
+    overflowX: 'auto',
+    padding: '8px 0',
+    maxWidth: '300px'
+  },
+  thumbnail: {
+    width: '50px',
+    height: '50px',
+    borderRadius: '8px',
+    padding: 0,
+    cursor: 'pointer',
+    background: 'rgba(255, 255, 255, 0.1)',
+    flexShrink: 0,
+    transition: 'all 0.2s'
+  },
+  thumbnailImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: '6px',
+    objectFit: 'cover'
+  },
+  thumbnailPlaceholder: {
+    width: '100%',
+    height: '100%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    color: 'rgba(255, 255, 255, 0.5)',
+    fontSize: '20px',
+    fontWeight: 'bold'
   },
   button: {
     background: 'linear-gradient(to right, #3b82f6, #2563eb)',

@@ -10,9 +10,11 @@ import { identifyCar } from "./services/aiService";
 function AppContent() {
   const [capturedCars, setCapturedCars] = useState([]);
   const [screenshot, setScreenshot] = useState(null);
+  const [capturedPhotos, setCapturedPhotos] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const videoRef = useRef(null);
+  const canvasRef = useRef(null);
   const [stream, setStream] = useState(null);
   const [filter, setFilter] = useState("descobertos");
   
@@ -24,13 +26,16 @@ function AppContent() {
 
   const startCamera = async () => {
     try {
-      const mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
+      const mediaStream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: "environment" } 
+      });
       setStream(mediaStream);
       if (videoRef.current) {
         videoRef.current.srcObject = mediaStream;
       }
     } catch (error) {
       console.error("Erro ao acessar a câmera:", error);
+      setError("Não foi possível acessar a câmera");
     }
   };
 
@@ -42,45 +47,69 @@ function AppContent() {
   };
 
   const takePhoto = () => {
-    if (!videoRef.current) return;
+    if (!videoRef.current || !canvasRef.current) return;
 
-    const canvas = document.createElement("canvas");
-    canvas.width = videoRef.current.videoWidth;
-    canvas.height = videoRef.current.videoHeight;
+    const canvas = canvasRef.current;
+    const video = videoRef.current;
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    
     const ctx = canvas.getContext("2d");
-    ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
     const imgData = canvas.toDataURL("image/png");
     setScreenshot(imgData);
-    stopCamera();
   };
 
   const retakePhoto = () => {
     setScreenshot(null);
-    startCamera();
   };
 
-  const confirmPhoto = async () => {
+  const removeCapturedPhoto = (index) => {
+    setCapturedPhotos((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const confirmPhoto = async (photos) => {
     setLoading(true);
     setError(null);
     try {
-      const result = await identifyCar(screenshot);
-      console.log("Resultado da API:", result);
-      setCapturedCars(prevCars => {
-        const alreadyExists = prevCars.some(
-          car =>
-            car.marca === result.marca &&
-            car.modelo === result.modelo &&
-            car.ano === result.ano
+      // Normalizar para sempre trabalhar com array
+      const imagesToProcess = Array.isArray(photos) ? photos : [photos];
+
+      if (imagesToProcess.length === 0) {
+        setError("Nenhuma imagem para processar");
+        setLoading(false);
+        return;
+      }
+
+      // Chamar a API unificada
+      const results = await identifyCar(imagesToProcess);
+
+      // Garantir que sempre retorna um array
+      const resultsArray = Array.isArray(results) ? results : [results];
+
+      console.log("Resultados da API:", resultsArray);
+
+      // Adicionar aos carros capturados (sem duplicatas)
+      setCapturedCars((prevCars) => {
+        const newCars = resultsArray.filter(
+          (result) =>
+            !prevCars.some(
+              (car) =>
+                car.marca === result.marca &&
+                car.modelo === result.modelo &&
+                car.ano === result.ano
+            )
         );
-        if (alreadyExists) {
-          return prevCars;
-        }
-        return [...prevCars, result];
+        return [...prevCars, ...newCars];
       });
+
+      // Limpar estado da câmera
+      setScreenshot(null);
+      setCapturedPhotos([]);
       goTo("result");
     } catch (error) {
       console.error("Erro ao identificar carro:", error);
-      setError("Erro ao identificar carro. Tente novamente.");
+      setError("Erro ao identificar o carro. Tente novamente.");
     } finally {
       setLoading(false);
     }
@@ -100,11 +129,18 @@ function AppContent() {
     loading,
     filter,
     setFilter,
-    videoRef
+    videoRef,
+    capturedPhotos,
+    setCapturedPhotos,
+    removeCapturedPhoto,
+    error,
+    setError
   };
 
   return (
     <>
+      <canvas ref={canvasRef} style={{ display: "none" }} />
+      
       {error && (
         <div style={{
           background: "#fee2e2",
@@ -112,11 +148,17 @@ function AppContent() {
           padding: "12px",
           borderRadius: "8px",
           margin: "16px",
-          textAlign: "center"
+          textAlign: "center",
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 999
         }}>
           {error}
         </div>
       )}
+      
       <Routes>
         <Route path="/" element={<WelcomePage {...commonProps} />} />
         <Route path="/welcome" element={<WelcomePage {...commonProps} />} />

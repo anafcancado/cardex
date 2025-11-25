@@ -1,12 +1,20 @@
 import { Camera, Upload } from "lucide-react";
 import { useRef } from "react";
 
-export default function HomePage({ goTo, startCamera, setScreenshot }) {
+export default function HomePage({
+  goTo,
+  startCamera,
+  setScreenshot,
+  setCapturedPhotos,
+  confirmPhoto,
+  loading
+}) {
   const fileInputRef = useRef(null);
 
   const handleOpenCamera = () => {
-    goTo("camera");
     setScreenshot(null);
+    setCapturedPhotos([]);
+    goTo("camera");
     startCamera();
   };
 
@@ -14,18 +22,40 @@ export default function HomePage({ goTo, startCamera, setScreenshot }) {
     fileInputRef.current?.click();
   };
 
-  const handleFileUpload = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const imageData = e.target.result;
-        setScreenshot(imageData);
+  const handleFileUpload = async (event) => {
+    const files = Array.from(event.target.files || []);
+    if (files.length === 0) return;
+
+    try {
+      const imagePromises = files.map((file) => {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = (e) => resolve(e.target.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+      });
+
+      const images = await Promise.all(imagePromises);
+
+      if (images.length === 1) {
+        // Foto única → vai para câmera com preview
+        setScreenshot(images[0]);
+        setCapturedPhotos([]);
         goTo("camera");
-      };
-      reader.readAsDataURL(file);
+        startCamera();
+      } else {
+        // Múltiplas fotos → vai para câmera SEM vídeo
+        setScreenshot(null);
+        setCapturedPhotos(images);
+        goTo("camera");
+      }
+
+    } catch (error) {
+      console.error("Erro ao ler arquivos:", error);
     }
-    // Reset do input para permitir selecionar o mesmo arquivo novamente
+
+    // Reset do input
     event.target.value = '';
   };
 
@@ -36,7 +66,7 @@ export default function HomePage({ goTo, startCamera, setScreenshot }) {
           ← Voltar
         </button>
         <button onClick={() => goTo("cardex")} style={styles.navButton}>
-          Ver Cardex 📘
+          Ver Cardex 📚
         </button>
       </header>
 
@@ -62,12 +92,17 @@ export default function HomePage({ goTo, startCamera, setScreenshot }) {
 
             <button
               onClick={handleUploadClick}
-              style={styles.uploadButton}
-              onMouseOver={(e) => e.target.style.transform = 'scale(1.05)'}
-              onMouseOut={(e) => e.target.style.transform = 'scale(1)'}
+              disabled={loading}
+              style={{
+                ...styles.uploadButton,
+                opacity: loading ? 0.6 : 1,
+                cursor: loading ? 'not-allowed' : 'pointer'
+              }}
+              onMouseOver={(e) => !loading && (e.target.style.transform = 'scale(1.05)')}
+              onMouseOut={(e) => !loading && (e.target.style.transform = 'scale(1)')}
             >
               <Upload size={20} style={styles.uploadIcon} />
-              Fazer Upload de Foto
+              {loading ? "Processando..." : "Fazer Upload de Foto"}
             </button>
 
             <input
@@ -75,11 +110,13 @@ export default function HomePage({ goTo, startCamera, setScreenshot }) {
               ref={fileInputRef}
               onChange={handleFileUpload}
               accept="image/*"
+              multiple
+              disabled={loading}
               style={styles.fileInput}
             />
 
             <p style={styles.instructionText}>
-              Tire uma foto ou faça upload para identificar um carro
+              Tire uma foto ou faça upload de uma ou mais imagens para identificar carros
             </p>
           </div>
         </div>
@@ -110,7 +147,8 @@ const styles = {
     padding: '8px 16px',
     borderRadius: '9999px',
     border: 'none',
-    cursor: 'pointer'
+    cursor: 'pointer',
+    transition: 'all 0.2s'
   },
   mainContent: {
     flex: 1,
@@ -146,7 +184,7 @@ const styles = {
     color: 'white',
     fontWeight: '600',
     padding: '12px 24px',
-    borderRadius: '9999px',
+    borderRadius: '9999py',
     border: 'none',
     cursor: 'pointer',
     fontSize: '16px',
@@ -177,11 +215,6 @@ const styles = {
   separator: {
     display: 'flex',
     alignItems: 'center',
-    margin: '16px 0'
-  },
-  separator: {
-    display: 'flex',
-    alignItems: 'center',
     margin: '16px 0',
     position: 'relative'
   },
@@ -194,22 +227,6 @@ const styles = {
     display: 'flex',
     justifyContent: 'center',
     width: '100%'
-  },
-  separator: {
-    display: 'flex',
-    alignItems: 'center',
-    margin: '16px 0',
-    position: 'relative',
-    '::before': {
-      content: '""',
-      position: 'absolute',
-      top: '50%',
-      left: 0,
-      right: 0,
-      height: '1px',
-      background: 'rgba(255, 255, 255, 0.1)',
-      zIndex: 0
-    }
   },
   fileInput: {
     display: 'none'
