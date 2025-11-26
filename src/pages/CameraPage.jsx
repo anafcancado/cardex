@@ -14,8 +14,6 @@ export default function CameraPage({
   capturedPhotos = [],
   removeCapturedPhoto
 }) {
-
-  // Liga a câmera somente quando não há fotos da galeria
   useEffect(() => {
     if (capturedPhotos.length === 0 && !screenshot) {
       startCamera();
@@ -23,34 +21,19 @@ export default function CameraPage({
     }
   }, [startCamera, stopCamera, capturedPhotos, screenshot]);
 
-  // Total de fotos = galeria + preview
   const totalPhotos = (capturedPhotos?.length || 0) + (screenshot ? 1 : 0);
 
-  // Adicionar foto individual à galeria
-  const handleAddPhoto = () => {
-    if (screenshot) {
-      // Combina as fotos existentes com a nova
-      const newPhotos = [...capturedPhotos, screenshot];
-      // Chama a API para identificar apenas a foto nova
-      confirmPhoto([screenshot]);
-    }
-  };
-
-  // Identificar todas as fotos de uma vez
   const handleIdentifyAll = () => {
     let fotosParaIdentificar = [];
 
-    // Adiciona fotos da galeria
     if (capturedPhotos.length > 0) {
       fotosParaIdentificar = [...capturedPhotos];
     }
 
-    // Adiciona a foto do preview, se existir
     if (screenshot) {
       fotosParaIdentificar.push(screenshot);
     }
 
-    // Só identifica se houver fotos
     if (fotosParaIdentificar.length > 0) {
       confirmPhoto(fotosParaIdentificar);
     }
@@ -68,30 +51,21 @@ export default function CameraPage({
         ← Voltar
       </button>
 
-      {/* ============================
-           PREVIEW / VIDEO / GALERIA
-         ============================ */}
       <div style={styles.mediaContainer}>
 
-        {/* Foto do preview da câmera */}
         {screenshot && (
           <img src={screenshot} alt="Captura" style={styles.media} />
         )}
 
-        {/* Primeira foto da galeria (quando não há preview) */}
         {!screenshot && capturedPhotos.length > 0 && (
           <img src={capturedPhotos[0]} alt="Foto Galeria" style={styles.media} />
         )}
 
-        {/* Vídeo ao vivo (somente quando não há galeria nem preview) */}
         {!screenshot && capturedPhotos.length === 0 && (
           <video ref={videoRef} autoPlay playsInline style={styles.media} />
         )}
       </div>
 
-      {/* ============================
-           MINI GALERIA DE FOTOS
-         ============================ */}
       {capturedPhotos.length > 0 && (
         <div style={styles.photoGallery}>
           <p style={styles.galleryLabel}>
@@ -120,44 +94,14 @@ export default function CameraPage({
         </div>
       )}
 
-      {/* ============================
-           BOTÕES DE AÇÃO
-         ============================ */}
       <div style={styles.actionsContainer}>
 
-        {/* CASO 1: Apenas vídeo ativo (sem fotos) */}
         {!screenshot && capturedPhotos.length === 0 && (
           <button onClick={takePhoto} style={styles.actionButton}>
-            Tirar Foto 📸
+            Tirar foto
           </button>
         )}
 
-        {/* CASO 2: Tem preview da câmera */}
-        {screenshot && (
-          <>
-            <button 
-              onClick={retakePhoto} 
-              style={styles.actionButton}
-              disabled={loading}
-            >
-              Refazer 🔄
-            </button>
-
-            <button
-              onClick={handleAddPhoto}
-              disabled={loading}
-              style={{
-                ...styles.actionButton,
-                opacity: loading ? 0.6 : 1,
-                cursor: loading ? "not-allowed" : "pointer"
-              }}
-            >
-              {loading ? "Processando..." : "Adicionar ✅"}
-            </button>
-          </>
-        )}
-
-        {/* CASO 3: Identificar todas as fotos */}
         {totalPhotos > 0 && (
           <button
             onClick={handleIdentifyAll}
@@ -169,7 +113,7 @@ export default function CameraPage({
               cursor: loading ? "not-allowed" : "pointer"
             }}
           >
-            {loading ? "Processando..." : `Identificar ${totalPhotos} 🚗`}
+            {loading ? "Processando..." : `Identificar ${totalPhotos} ${totalPhotos > 1 ? "veículos" : "veículo"}`}
           </button>
         )}
       </div>
@@ -177,9 +121,6 @@ export default function CameraPage({
   );
 }
 
-/* ============================
-   ESTILOS
-   ============================ */
 const styles = {
   container: {
     height: "100vh",
@@ -204,8 +145,8 @@ const styles = {
     zIndex: 10
   },
   mediaContainer: {
-    width: "100%",
-    maxWidth: "480px",
+    width: "300px",
+    height: "300px",
     display: "flex",
     justifyContent: "center"
   },
@@ -220,7 +161,9 @@ const styles = {
     maxWidth: "480px"
   },
   galleryLabel: {
+    fontFamily: 'inherit',
     color: "white",
+    fontWeight: '600',
     fontSize: "12px",
     marginBottom: "8px",
     marginLeft: "4px"

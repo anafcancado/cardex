@@ -13,8 +13,8 @@ import { addCarToCollection, getUserCollection } from "./services/carsService";
 
 
 function AppContent() {
-  const [capturedCars, setCapturedCars] = useState([]); // histórico
-  const [currentBatch, setCurrentBatch] = useState([]); // lote do envio atual
+  const [capturedCars, setCapturedCars] = useState([]);
+  const [currentBatch, setCurrentBatch] = useState([]);
   const [screenshot, setScreenshot] = useState(null);
   const [capturedPhotos, setCapturedPhotos] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -27,7 +27,6 @@ function AppContent() {
 
   const navigate = useNavigate();
 
-  // Verificar autenticação ao carregar
   useEffect(() => {
     if (isAuthenticated()) {
       const user = getUser();
@@ -36,13 +35,11 @@ function AppContent() {
     }
   }, []);
 
-  // Carregar coleção do usuário do backend
   const loadUserCollection = async () => {
     try {
       const data = await getUserCollection();
       console.log("Coleção carregada do backend:", data);
       
-      // Converter carros do backend para o formato do estado local
       const carsFromBackend = data.cars.map(car => ({
         id: car.id.toString(),
         marca: car.carBrand,
@@ -120,7 +117,6 @@ function AppContent() {
     setLoading(true);
     setError(null);
     try {
-      // Normalizar para sempre trabalhar com array
       const imagesToProcess = Array.isArray(photos) ? photos : [photos];
 
       if (imagesToProcess.length === 0) {
@@ -129,15 +125,10 @@ function AppContent() {
         return;
       }
 
-      // Chamar a API de IA para identificar
       const results = await identifyCar(imagesToProcess);
-
-      // Garantir que sempre retorna um array
       const resultsArray = Array.isArray(results) ? results : [results];
-
       console.log("Resultados da API de IA:", resultsArray);
 
-      // Salvar os carros no backend (se o usuário estiver autenticado)
       if (isAuthenticated()) {
         for (const result of resultsArray) {
           try {
@@ -149,7 +140,6 @@ function AppContent() {
             console.log(`✅ Carro salvo: ${result.marca} ${result.modelo}`);
           } catch (err) {
             console.error("Erro ao salvar carro no backend:", err);
-            // Se for duplicata, não é erro crítico
             if (!err.message.includes('já possui')) {
               setError("Alguns carros não puderam ser salvos");
             }
@@ -159,7 +149,6 @@ function AppContent() {
 
       setCurrentBatch(resultsArray);
 
-      // Adicionar aos carros capturados no estado local (sem duplicatas)
       setCapturedCars((prevCars) => {
         const newCars = resultsArray.filter(
           (result) =>
@@ -173,7 +162,6 @@ function AppContent() {
         return [...prevCars, ...newCars];
       });
 
-      // Limpar estado da câmera
       setScreenshot(null);
       setCapturedPhotos([]);
       goTo("result");

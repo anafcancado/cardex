@@ -6,7 +6,6 @@ export default function HomePage({
   startCamera,
   setScreenshot,
   setCapturedPhotos,
-  confirmPhoto,
   loading
 }) {
   const fileInputRef = useRef(null);
@@ -39,13 +38,11 @@ export default function HomePage({
       const images = await Promise.all(imagePromises);
 
       if (images.length === 1) {
-        // Foto única → vai para câmera com preview
         setScreenshot(images[0]);
         setCapturedPhotos([]);
         goTo("camera");
         startCamera();
       } else {
-        // Múltiplas fotos → vai para câmera SEM vídeo
         setScreenshot(null);
         setCapturedPhotos(images);
         goTo("camera");
@@ -55,7 +52,6 @@ export default function HomePage({
       console.error("Erro ao ler arquivos:", error);
     }
 
-    // Reset do input
     event.target.value = '';
   };
 

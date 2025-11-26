@@ -16,12 +16,10 @@ export default function LoginPage({ goTo, onLoginSuccess }) {
       const data = await login(email, password);
       console.log('Login bem-sucedido:', data);
       
-      // Chamar callback de sucesso
       if (onLoginSuccess) {
         onLoginSuccess(data.user);
       }
       
-      // Redirecionar para home
       goTo('home');
     } catch (err) {
       setError(err.message || 'Erro ao fazer login');

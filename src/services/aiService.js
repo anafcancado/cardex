@@ -1,4 +1,3 @@
-// Função auxiliar para converter base64 em Blob
 function base64ToBlob(base64) {
   const arr = base64.split(",");
   const mime = arr[0].match(/:(.*?);/)[1];
@@ -11,7 +10,6 @@ function base64ToBlob(base64) {
   return new Blob([u8arr], { type: mime });
 }
 
-// Função para processar uma imagem individual
 function processPrediction(pred, imageBase64, index) {
   return {
     id: Date.now().toString() + "_" + index,
@@ -27,27 +25,22 @@ function processPrediction(pred, imageBase64, index) {
   };
 }
 
-// Função unificada que aceita uma ou múltiplas imagens
 export async function identifyCar(images) {
   console.log("Processando imagens...");
 
-  // Normalizar entrada: converter imagem única em array
   const imagesArray = Array.isArray(images) ? images : [images];
   
   if (imagesArray.length === 0) {
     throw new Error("Nenhuma imagem fornecida");
   }
 
-  // Se for apenas uma imagem, usar endpoint single
   if (imagesArray.length === 1) {
     return identifyCarSingle(imagesArray[0]);
   }
 
-  // Se forem múltiplas, usar endpoint batch
   return identifyCarBatch(imagesArray);
 }
 
-// Função para identificar uma única imagem
 async function identifyCarSingle(imageBase64) {
   console.log("Imagem recebida:", (imageBase64 || "").substring(0, 30) + "...");
 
@@ -76,11 +69,9 @@ async function identifyCarSingle(imageBase64) {
     throw new Error("Nenhuma predição retornada");
   }
 
-  // Para single, pega apenas a primeira predição (rank 1)
   return processPrediction(result.predictions[0], imageBase64, 0);
 }
 
-// Função para identificar múltiplas imagens
 async function identifyCarBatch(imagesBase64Array) {
   console.log(`Processando ${imagesBase64Array.length} imagens em batch`);
 
@@ -114,9 +105,6 @@ async function identifyCarBatch(imagesBase64Array) {
     throw new Error("Batch não foi bem-sucedido");
   }
 
-  // ✅ CORREÇÃO: A resposta vem em "results", onde cada item tem "predictions" dentro
-  // results: [ { predictions: [pred1, pred2, pred3] }, { predictions: [...] } ]
-  
   const results = result.results || result.predictions || [];
 
   if (!results || results.length === 0) {
@@ -125,21 +113,12 @@ async function identifyCarBatch(imagesBase64Array) {
 
   console.log(`📊 Batch contém ${results.length} resultado(s)`);
 
-  // Mapear resultados: para cada resultado, extrair a melhor predição (rank 1)
   return results.map((resultItem, idx) => {
-    // Cada resultado pode ser:
-    // 1. { predictions: [array de predições] }
-    // 2. { predictions: [array], success: true }
-    // 3. Um objeto com sucesso
-
     let bestPrediction = null;
 
-    // Se tem predictions array dentro
     if (resultItem.predictions && Array.isArray(resultItem.predictions) && resultItem.predictions.length > 0) {
-      // Pega o primeiro (melhor, rank 1)
       bestPrediction = resultItem.predictions[0];
     }
-    // Se é um objeto success com dados diretos
     else if (resultItem.success && resultItem.predictions) {
       bestPrediction = resultItem.predictions[0];
     }

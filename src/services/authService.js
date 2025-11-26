@@ -1,42 +1,34 @@
 const API_URL = 'http://localhost:3001/api';
 
-// Salvar token no localStorage
 export const saveToken = (token) => {
   localStorage.setItem('cardex_token', token);
 };
 
-// Obter token do localStorage
 export const getToken = () => {
   return localStorage.getItem('cardex_token');
 };
 
-// Remover token do localStorage
 export const removeToken = () => {
   localStorage.removeItem('cardex_token');
 };
 
-// Salvar usuário no localStorage
 export const saveUser = (user) => {
   localStorage.setItem('cardex_user', JSON.stringify(user));
 };
 
-// Obter usuário do localStorage
 export const getUser = () => {
   const user = localStorage.getItem('cardex_user');
   return user ? JSON.parse(user) : null;
 };
 
-// Remover usuário do localStorage
 export const removeUser = () => {
   localStorage.removeItem('cardex_user');
 };
 
-// Verificar se está autenticado
 export const isAuthenticated = () => {
   return !!getToken();
 };
 
-// Cadastro
 export const register = async (username, email, password) => {
   try {
     const response = await fetch(`${API_URL}/auth/register`, {
@@ -53,7 +45,6 @@ export const register = async (username, email, password) => {
       throw new Error(data.error || 'Erro ao cadastrar');
     }
 
-    // Salvar token e usuário
     saveToken(data.token);
     saveUser(data.user);
 
@@ -63,7 +54,6 @@ export const register = async (username, email, password) => {
   }
 };
 
-// Login
 export const login = async (email, password) => {
   try {
     const response = await fetch(`${API_URL}/auth/login`, {
@@ -80,7 +70,6 @@ export const login = async (email, password) => {
       throw new Error(data.error || 'Erro ao fazer login');
     }
 
-    // Salvar token e usuário
     saveToken(data.token);
     saveUser(data.user);
 
@@ -90,13 +79,11 @@ export const login = async (email, password) => {
   }
 };
 
-// Logout
 export const logout = () => {
   removeToken();
   removeUser();
 };
 
-// Obter perfil do usuário
 export const getProfile = async () => {
   try {
     const token = getToken();

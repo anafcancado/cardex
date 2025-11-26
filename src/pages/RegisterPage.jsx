@@ -13,7 +13,6 @@ export default function RegisterPage({ goTo, onRegisterSuccess }) {
     e.preventDefault();
     setError('');
 
-    // Validações
     if (password !== confirmPassword) {
       setError('As senhas não coincidem');
       return;
@@ -30,12 +29,10 @@ export default function RegisterPage({ goTo, onRegisterSuccess }) {
       const data = await register(username, email, password);
       console.log('Cadastro bem-sucedido:', data);
       
-      // Chamar callback de sucesso
       if (onRegisterSuccess) {
         onRegisterSuccess(data.user);
       }
       
-      // Redirecionar para home
       goTo('home');
     } catch (err) {
       setError(err.message || 'Erro ao criar conta');

@@ -2,29 +2,25 @@ import brands_models from '../../brands_models.json';
 import { useState } from 'react';
 
 export default function CardexPage({ goTo, capturedCars, filter, setFilter }) {
-  const [currentView, setCurrentView] = useState('brands'); // 'brands' ou 'models'
+  const [currentView, setCurrentView] = useState('brands');
   const [selectedBrand, setSelectedBrand] = useState(null);
 
-  // Função para voltar à view de marcas
   const goBackToBrands = () => {
     setCurrentView('brands');
     setSelectedBrand(null);
   };
 
-  // Função para selecionar uma marca e mostrar seus modelos
   const selectBrand = (brandName) => {
     setSelectedBrand(brandName);
     setCurrentView('models');
   };
 
-  // Verifica se um carro foi descoberto
   const isCarDiscovered = (marca, modelo) => {
     return capturedCars.some(car => 
       car.marca === marca && car.modelo === modelo
     );
   };
 
-  // View de marcas
   if (currentView === 'brands') {
     return (
       <div style={styles.container}>
@@ -55,7 +51,6 @@ export default function CardexPage({ goTo, capturedCars, filter, setFilter }) {
                 const discoveredCount = discoveredModels.length;
                 const isBrandComplete = discoveredCount === totalModels;
 
-                // Para filtro "descobertos", mostrar apenas marcas com carros descobertos
                 if (filter === "descobertos" && discoveredCount === 0) {
                   return null;
                 }
@@ -104,19 +99,17 @@ export default function CardexPage({ goTo, capturedCars, filter, setFilter }) {
     );
   }
 
-  // View de modelos da marca selecionada
   if (currentView === 'models' && selectedBrand) {
     const brand = brands_models.brands[selectedBrand];
-    
-    // Para "descobertos", mostrar apenas os carros capturados
-    const filteredModels = filter === "descobertos" 
+
+    const filteredModels = filter === "descobertos"
       ? capturedCars.filter(car => car.marca === selectedBrand)
       : brand.models.map(model => {
           const isDiscovered = isCarDiscovered(selectedBrand, model.model_name);
-          const discoveredCar = capturedCars.find(car => 
+          const discoveredCar = capturedCars.find(car =>
             car.marca === selectedBrand && car.modelo === model.model_name
           );
-          
+
           return {
             id: `${selectedBrand}-${model.model_name}`,
             marca: selectedBrand,
@@ -128,21 +121,21 @@ export default function CardexPage({ goTo, capturedCars, filter, setFilter }) {
 
     return (
       <div style={styles.container}>
-        <header style={styles.header}>
-          <button onClick={goBackToBrands} style={styles.headerButton}>
-            ← Voltar para Marcas
-          </button>
-
+        <header style={styles.headerModels}>
+          <div style={styles.headerRow}>
+            <button onClick={goBackToBrands} style={styles.headerButton}>
+              ← Voltar para Marcas
+            </button>
+            <select
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              style={styles.filterSelect}
+            >
+              <option value="descobertos" style={styles.optionStyle}>Descobertos</option>
+              <option value="todos" style={styles.optionStyle}>Todos</option>
+            </select>
+          </div>
           <h2 style={styles.brandTitle}>{selectedBrand}</h2>
-
-          <select
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            style={styles.filterSelect}
-          >
-            <option value="descobertos" style={styles.optionStyle}>Descobertos</option>
-            <option value="todos" style={styles.optionStyle}>Todos</option>
-          </select>
         </header>
 
         <main style={styles.mainContent}>
@@ -154,10 +147,10 @@ export default function CardexPage({ goTo, capturedCars, filter, setFilter }) {
             <div style={styles.carsGrid}>
               {filteredModels.map((carro) => {
                 const isDiscovered = filter === "descobertos" || carro.discovered;
-                
+
                 return (
-                  <div 
-                    key={carro.id} 
+                  <div
+                    key={carro.id}
                     style={{
                       ...styles.carCard,
                       ...(isDiscovered && styles.discoveredCard)
@@ -179,13 +172,6 @@ export default function CardexPage({ goTo, capturedCars, filter, setFilter }) {
                       )}
                     </div>
                     <p><strong>{carro.modelo}</strong></p>
-                    {isDiscovered && "confianca" in carro && (
-                      <p style={{ fontSize: '12px', color: '#93c5fd' }}>
-                        Confiança: {typeof carro.confianca === "number"
-                          ? carro.confianca.toFixed(2) + "%"
-                          : "Desconhecido"}
-                      </p>
-                    )}
                     {isDiscovered && (
                       <div style={styles.checkmark}>✓</div>
                     )}
@@ -217,6 +203,23 @@ const styles = {
     backdropFilter: 'blur(8px)',
     gap: '16px'
   },
+  headerModels: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'stretch',
+    padding: '16px',
+    background: 'rgba(0,0,0,0.2)',
+    backdropFilter: 'blur(8px)',
+    gap: '8px'
+  },
+  headerRow: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: '16px',
+    width: '100%'
+  },
   headerButton: {
     background: 'rgba(255, 255, 255, 0.1)',
     color: 'white',
@@ -229,7 +232,11 @@ const styles = {
   brandTitle: {
     margin: 0,
     textAlign: 'center',
-    flex: 1
+    fontSize: '2rem',
+    fontWeight: 'bold',
+    marginTop: '8px',
+    marginBottom: '0',
+    width: '100%'
   },
   filterSelect: {
     background: 'rgba(255, 255, 255, 0.1)',

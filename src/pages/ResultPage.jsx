@@ -67,7 +67,6 @@ export default function ResultPage({ goTo, currentBatch = [] }) {
         <>
           <h1 style={styles.title}>Carros Identificados!</h1>
 
-          {/* Indicador de progresso */}
           {lastCars.length > 1 && (
             <p style={styles.counter}>
               {currentIndex + 1} de {lastCars.length}
@@ -95,7 +94,6 @@ export default function ResultPage({ goTo, currentBatch = [] }) {
             )}
           </div>
 
-          {/* Navegação entre carros */}
           {lastCars.length > 1 && (
             <div style={styles.navigationContainer}>
               <button onClick={handlePrevious} style={styles.navButton}>

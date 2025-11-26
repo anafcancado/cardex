@@ -2,7 +2,6 @@ import { getToken } from './authService';
 
 const API_URL = 'http://localhost:3001/api';
 
-// Adicionar carro à coleção
 export const addCarToCollection = async (carBrand, carModel, imageBase64) => {
   try {
     const token = getToken();
@@ -11,10 +10,8 @@ export const addCarToCollection = async (carBrand, carModel, imageBase64) => {
       throw new Error('Usuário não autenticado');
     }
 
-    // Converter base64 para Blob
     const blob = base64ToBlob(imageBase64);
     
-    // Criar FormData
     const formData = new FormData();
     formData.append('carBrand', carBrand);
     formData.append('carModel', carModel);
@@ -40,7 +37,6 @@ export const addCarToCollection = async (carBrand, carModel, imageBase64) => {
   }
 };
 
-// Listar coleção do usuário
 export const getUserCollection = async () => {
   try {
     const token = getToken();
@@ -67,7 +63,6 @@ export const getUserCollection = async () => {
   }
 };
 
-// Deletar carro da coleção
 export const deleteCarFromCollection = async (carId) => {
   try {
     const token = getToken();
@@ -95,7 +90,6 @@ export const deleteCarFromCollection = async (carId) => {
   }
 };
 
-// Buscar carro específico
 export const getCar = async (carId) => {
   try {
     const token = getToken();
@@ -122,7 +116,6 @@ export const getCar = async (carId) => {
   }
 };
 
-// Função auxiliar para converter base64 em Blob
 function base64ToBlob(base64) {
   const arr = base64.split(',');
   const mime = arr[0].match(/:(.*?);/)[1];
