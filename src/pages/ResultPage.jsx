@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 
-export default function ResultPage({ goTo, capturedCars }) {
+
+export default function ResultPage({ goTo, currentBatch = [] }) {
   const [showResult, setShowResult] = useState(false);
   const [shake, setShake] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  const lastCars = capturedCars.length > 0 ? capturedCars.slice(-10) : [];
+  const lastCars = currentBatch.length > 0 ? currentBatch : [];
   const currentCar = lastCars[currentIndex];
 
   useEffect(() => {
@@ -20,7 +21,7 @@ export default function ResultPage({ goTo, capturedCars }) {
       clearTimeout(shakeTimer);
       clearTimeout(resultTimer);
     };
-  }, [capturedCars]);
+  }, [currentBatch]);
 
   if (!currentCar) {
     return (
@@ -84,7 +85,6 @@ export default function ResultPage({ goTo, capturedCars }) {
           <div style={styles.carInfo}>
             <p><strong>Marca:</strong> {currentCar.marca || "Desconhecido"}</p>
             <p><strong>Modelo:</strong> {currentCar.modelo || "Desconhecido"}</p>
-            <p><strong>Ano:</strong> {currentCar.ano || "Desconhecido"}</p>
             {"confianca" in currentCar && (
               <p>
                 <strong>Confiança:</strong>{" "}
@@ -246,35 +246,3 @@ const styles = {
     transition: 'transform 0.2s'
   }
 };
-
-/*
-Adicione no seu index.css:
-
-@keyframes pulse {
-  0% { transform: scale(1); opacity: 0.7; }
-  70% { transform: scale(1.3); opacity: 0.2; }
-  100% { transform: scale(1); opacity: 0.7; }
-}
-@keyframes spin {
-  0% { transform: rotate(0deg);}
-  100% { transform: rotate(360deg);}
-}
-@keyframes shake {
-  10%, 90% { transform: translateX(-2px);}
-  20%, 80% { transform: translateX(4px);}
-  30%, 50%, 70% { transform: translateX(-8px);}
-  40%, 60% { transform: translateX(8px);}
-}
-@keyframes auraPulse {
-  0% { opacity: 0.7; transform: scale(1);}
-  50% { opacity: 0.3; transform: scale(1.15);}
-  100% { opacity: 0.7; transform: scale(1);}
-}
-.capturing-text-anim {
-  animation: textFlash 1.2s infinite;
-}
-@keyframes textFlash {
-  0%, 100% { opacity: 1;}
-  50% { opacity: 0.5;}
-}
-*/

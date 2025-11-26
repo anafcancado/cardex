@@ -11,8 +11,10 @@ import { identifyCar } from "./services/aiService";
 import { getUser, isAuthenticated } from "./services/authService";
 import { addCarToCollection, getUserCollection } from "./services/carsService";
 
+
 function AppContent() {
-  const [capturedCars, setCapturedCars] = useState([]);
+  const [capturedCars, setCapturedCars] = useState([]); // histórico
+  const [currentBatch, setCurrentBatch] = useState([]); // lote do envio atual
   const [screenshot, setScreenshot] = useState(null);
   const [capturedPhotos, setCapturedPhotos] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -22,7 +24,7 @@ function AppContent() {
   const canvasRef = useRef(null);
   const [stream, setStream] = useState(null);
   const [filter, setFilter] = useState("descobertos");
-  
+
   const navigate = useNavigate();
 
   // Verificar autenticação ao carregar
@@ -72,8 +74,8 @@ function AppContent() {
 
   const startCamera = async () => {
     try {
-      const mediaStream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: "environment" } 
+      const mediaStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "environment" }
       });
       setStream(mediaStream);
       if (videoRef.current) {
@@ -99,7 +101,7 @@ function AppContent() {
     const video = videoRef.current;
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
-    
+
     const ctx = canvas.getContext("2d");
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
     const imgData = canvas.toDataURL("image/png");
@@ -155,6 +157,8 @@ function AppContent() {
         }
       }
 
+      setCurrentBatch(resultsArray);
+
       // Adicionar aos carros capturados no estado local (sem duplicatas)
       setCapturedCars((prevCars) => {
         const newCars = resultsArray.filter(
@@ -192,6 +196,7 @@ function AppContent() {
     confirmPhoto,
     capturedCars,
     setCapturedCars,
+    currentBatch,
     loading,
     filter,
     setFilter,
@@ -210,7 +215,7 @@ function AppContent() {
   return (
     <>
       <canvas ref={canvasRef} style={{ display: "none" }} />
-      
+
       {error && (
         <div style={{
           background: "#fee2e2",
@@ -228,7 +233,7 @@ function AppContent() {
           {error}
         </div>
       )}
-      
+
       <Routes>
         <Route path="/" element={<WelcomePage {...commonProps} />} />
         <Route path="/welcome" element={<WelcomePage {...commonProps} />} />
