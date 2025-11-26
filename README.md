@@ -1,16 +1,223 @@
-# React + Vite
+# Cardex - Sistema de Identificação e Coleção de Carros 🚗
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Aplicação completa com frontend React e backend Node.js para identificar e colecionar carros através de fotos.
 
-Currently, two official plugins are available:
+## 🎯 Funcionalidades
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- ✅ Sistema de autenticação (Login/Cadastro)
+- ✅ Captura de fotos de carros via câmera
+- ✅ Identificação de carros por IA
+- ✅ Coleção personalizada por usuário
+- ✅ Armazenamento de fotos
+- ✅ Banco de dados SQLite
 
-## React Compiler
+## 📁 Estrutura do Projeto
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```
+cardex/
+├── backend/              # API Node.js + Express + SQLite
+│   ├── config/
+│   ├── controllers/
+│   ├── middleware/
+│   ├── models/
+│   ├── routes/
+│   ├── uploads/
+│   └── server.js
+├── src/                  # Frontend React
+│   ├── pages/
+│   │   ├── WelcomePage.jsx
+│   │   ├── LoginPage.jsx
+│   │   ├── RegisterPage.jsx
+│   │   ├── HomePage.jsx
+│   │   ├── CameraPage.jsx
+│   │   ├── ResultPage.jsx
+│   │   └── CardexPage.jsx
+│   ├── services/
+│   │   ├── authService.js
+│   │   └── aiService.js
+│   └── App.jsx
+└── README.md
+```
 
-## Expanding the ESLint configuration
+## 🚀 Como Rodar o Projeto
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### Pré-requisitos
+
+- Node.js (v16 ou superior)
+- npm ou yarn
+
+### 1. Instalar dependências do Frontend
+
+```powershell
+npm install
+```
+
+### 2. Instalar dependências do Backend
+
+```powershell
+cd backend
+npm install
+```
+
+### 3. Iniciar o Backend
+
+Em um terminal, dentro da pasta `backend/`:
+
+```powershell
+npm run dev
+```
+
+O backend estará rodando em `http://localhost:3001`
+
+### 4. Iniciar o Frontend
+
+Em outro terminal, na raiz do projeto:
+
+```powershell
+npm run dev
+```
+
+O frontend estará rodando em `http://localhost:5173`
+
+## 📱 Fluxo da Aplicação
+
+1. **Tela de Boas-vindas** - Opções de Login ou Cadastro
+2. **Login/Cadastro** - Autenticação de usuário
+3. **Home** - Navegação principal
+4. **Câmera** - Captura de fotos de carros
+5. **Resultado** - Visualização do carro identificado
+6. **Cardex** - Coleção completa de carros do usuário
+
+## 🔐 Autenticação
+
+O sistema usa JWT (JSON Web Tokens) para autenticação:
+
+- Token é salvo no `localStorage`
+- Válido por 7 dias
+- Enviado no header `Authorization: Bearer {token}`
+
+## 📡 API Endpoints
+
+### Autenticação
+
+- `POST /api/auth/register` - Cadastro de usuário
+- `POST /api/auth/login` - Login
+- `GET /api/auth/profile` - Perfil do usuário (protegido)
+
+### Carros
+
+- `POST /api/cars` - Adicionar carro à coleção (protegido)
+- `GET /api/cars` - Listar coleção (protegido)
+- `GET /api/cars/:id` - Buscar carro específico (protegido)
+- `DELETE /api/cars/:id` - Remover carro (protegido)
+
+## 🗄️ Banco de Dados
+
+SQLite com 2 tabelas principais:
+
+### users
+- id, username, email, password, created_at
+
+### collected_cars
+- id, user_id, car_brand, car_model, image_path, detected_at
+
+## 🛠️ Tecnologias
+
+### Frontend
+- React 19
+- React Router DOM
+- Vite
+- Tailwind CSS
+- Framer Motion
+- React Webcam
+
+### Backend
+- Node.js
+- Express
+- SQLite (better-sqlite3)
+- JWT (jsonwebtoken)
+- Bcrypt
+- Multer
+- CORS
+
+## 📝 Testando o Sistema
+
+### 1. Criar uma conta
+
+1. Acesse `http://localhost:5173`
+2. Clique em "Criar Conta"
+3. Preencha: username, email, senha
+4. Você será automaticamente logado
+
+### 2. Fazer login
+
+1. Clique em "Entrar" na tela inicial
+2. Use email e senha cadastrados
+3. Acesse a aplicação
+
+### 3. Capturar carros
+
+1. Na home, vá para a câmera
+2. Tire foto de um carro
+3. Confirme a foto
+4. Veja o carro identificado
+5. Acesse o Cardex para ver sua coleção
+
+## 🔧 Configuração
+
+### Backend (.env)
+
+```env
+PORT=3001
+JWT_SECRET=sua_chave_secreta_aqui
+NODE_ENV=development
+```
+
+### Frontend
+
+A URL da API está configurada em `src/services/authService.js`:
+
+```javascript
+const API_URL = 'http://localhost:3001/api';
+```
+
+## 🐛 Troubleshooting
+
+### Backend não inicia
+- Verifique se a porta 3001 está livre
+- Rode `npm install` na pasta backend
+- Verifique o arquivo `.env`
+
+### Frontend não conecta ao backend
+- Certifique-se que o backend está rodando
+- Verifique CORS no backend
+- Confira a URL da API no código
+
+### Câmera não funciona
+- Dê permissão para a câmera no navegador
+- Use HTTPS em produção
+- Teste em um dispositivo com câmera
+
+### Erro de autenticação
+- Limpe o localStorage
+- Faça login novamente
+- Verifique se o token é válido
+
+## 📦 Build para Produção
+
+### Frontend
+
+```powershell
+npm run build
+```
+
+### Backend
+
+```powershell
+cd backend
+npm start
+```
+
+---
+
+Desenvolvido com ❤️ para o projeto Cardex 🚗✨

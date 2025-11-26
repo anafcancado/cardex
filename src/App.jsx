@@ -1,11 +1,15 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, useNavigate } from "react-router-dom";
 import WelcomePage from "./pages/WelcomePage";
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
 import HomePage from "./pages/HomePage";
 import CameraPage from "./pages/CameraPage";
 import ResultPage from "./pages/ResultPage";
 import CardexPage from "./pages/CardexPage";
 import { identifyCar } from "./services/aiService";
+import { getUser, isAuthenticated } from "./services/authService";
+import { addCarToCollection, getUserCollection } from "./services/carsService";
 
 function AppContent() {
   const [capturedCars, setCapturedCars] = useState([]);
@@ -13,6 +17,7 @@ function AppContent() {
   const [capturedPhotos, setCapturedPhotos] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const [stream, setStream] = useState(null);
@@ -20,8 +25,49 @@ function AppContent() {
   
   const navigate = useNavigate();
 
+  // Verificar autenticação ao carregar
+  useEffect(() => {
+    if (isAuthenticated()) {
+      const user = getUser();
+      setCurrentUser(user);
+      loadUserCollection();
+    }
+  }, []);
+
+  // Carregar coleção do usuário do backend
+  const loadUserCollection = async () => {
+    try {
+      const data = await getUserCollection();
+      console.log("Coleção carregada do backend:", data);
+      
+      // Converter carros do backend para o formato do estado local
+      const carsFromBackend = data.cars.map(car => ({
+        id: car.id.toString(),
+        marca: car.carBrand,
+        modelo: car.carModel,
+        imagem: `http://localhost:3001${car.imagePath}`,
+        ano: "",
+        detectedAt: car.detectedAt
+      }));
+      
+      setCapturedCars(carsFromBackend);
+    } catch (error) {
+      console.error("Erro ao carregar coleção:", error);
+    }
+  };
+
   const goTo = (page) => {
     navigate(`/${page}`);
+  };
+
+  const handleLoginSuccess = (user) => {
+    setCurrentUser(user);
+    loadUserCollection();
+  };
+
+  const handleRegisterSuccess = (user) => {
+    setCurrentUser(user);
+    loadUserCollection();
   };
 
   const startCamera = async () => {
@@ -81,15 +127,35 @@ function AppContent() {
         return;
       }
 
-      // Chamar a API unificada
+      // Chamar a API de IA para identificar
       const results = await identifyCar(imagesToProcess);
 
       // Garantir que sempre retorna um array
       const resultsArray = Array.isArray(results) ? results : [results];
 
-      console.log("Resultados da API:", resultsArray);
+      console.log("Resultados da API de IA:", resultsArray);
 
-      // Adicionar aos carros capturados (sem duplicatas)
+      // Salvar os carros no backend (se o usuário estiver autenticado)
+      if (isAuthenticated()) {
+        for (const result of resultsArray) {
+          try {
+            await addCarToCollection(
+              result.marca,
+              result.modelo,
+              result.imagem
+            );
+            console.log(`✅ Carro salvo: ${result.marca} ${result.modelo}`);
+          } catch (err) {
+            console.error("Erro ao salvar carro no backend:", err);
+            // Se for duplicata, não é erro crítico
+            if (!err.message.includes('já possui')) {
+              setError("Alguns carros não puderam ser salvos");
+            }
+          }
+        }
+      }
+
+      // Adicionar aos carros capturados no estado local (sem duplicatas)
       setCapturedCars((prevCars) => {
         const newCars = resultsArray.filter(
           (result) =>
@@ -134,7 +200,11 @@ function AppContent() {
     setCapturedPhotos,
     removeCapturedPhoto,
     error,
-    setError
+    setError,
+    currentUser,
+    setCurrentUser,
+    onLoginSuccess: handleLoginSuccess,
+    onRegisterSuccess: handleRegisterSuccess
   };
 
   return (
@@ -162,6 +232,8 @@ function AppContent() {
       <Routes>
         <Route path="/" element={<WelcomePage {...commonProps} />} />
         <Route path="/welcome" element={<WelcomePage {...commonProps} />} />
+        <Route path="/login" element={<LoginPage {...commonProps} />} />
+        <Route path="/register" element={<RegisterPage {...commonProps} />} />
         <Route path="/home" element={<HomePage {...commonProps} />} />
         <Route path="/camera" element={<CameraPage {...commonProps} />} />
         <Route path="/result" element={<ResultPage {...commonProps} />} />

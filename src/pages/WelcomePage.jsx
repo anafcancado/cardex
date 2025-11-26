@@ -8,12 +8,21 @@ export default function WelcomePage({ goTo }) {
         <p style={styles.subtitle}>
           Descubra e capture todos os carros que puder!
         </p>
-        <button
-          onClick={() => goTo("home")}
-          style={styles.startButton}
-        >
-          Começar Jornada
-        </button>
+        
+        <div style={styles.buttonGroup}>
+          <button
+            onClick={() => goTo("login")}
+            style={styles.loginButton}
+          >
+            Entrar
+          </button>
+          <button
+            onClick={() => goTo("register")}
+            style={styles.registerButton}
+          >
+            Criar Conta
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -59,7 +68,14 @@ const styles = {
     maxWidth: '300px',
     marginBottom: '32px'
   },
-  startButton: {
+  buttonGroup: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '12px',
+    width: '100%',
+    maxWidth: '280px'
+  },
+  loginButton: {
     background: 'white',
     color: '#1e3a8a',
     fontWeight: '600',
@@ -69,6 +85,17 @@ const styles = {
     cursor: 'pointer',
     fontSize: '16px',
     boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
-    transition: 'transform 0.2s'
+    transition: 'all 0.2s'
+  },
+  registerButton: {
+    background: 'transparent',
+    color: 'white',
+    fontWeight: '600',
+    padding: '12px 32px',
+    borderRadius: '9999px',
+    border: '2px solid white',
+    cursor: 'pointer',
+    fontSize: '16px',
+    transition: 'all 0.2s'
   }
 };
