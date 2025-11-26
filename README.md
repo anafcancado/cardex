@@ -46,6 +46,28 @@ cardex/
 - Node.js (v16 ou superior)
 - npm ou yarn
 
+### ⚠️ IMPORTANTE - Configuração obrigatória do Backend
+
+**Antes de rodar o backend**, você precisa criar o arquivo `.env`:
+
+1. Entre na pasta `backend/`
+2. Crie um arquivo chamado `.env` (ou copie o `.env.example`)
+3. Adicione o seguinte conteúdo:
+
+```env
+PORT=3001
+JWT_SECRET=cardex_secret_key_change_in_production
+NODE_ENV=development
+```
+
+**OU** copie o arquivo de exemplo:
+```powershell
+cd backend
+copy .env.example .env
+```
+
+> 🚨 **SEM O ARQUIVO .env O BACKEND NÃO FUNCIONARÁ!** Você verá o erro: `secretOrPrivateKey must have a value`
+
 ### 1. Instalar dependências do Frontend
 
 ```powershell
