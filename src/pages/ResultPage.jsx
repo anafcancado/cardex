@@ -84,7 +84,6 @@ export default function ResultPage({ goTo, capturedCars }) {
           <div style={styles.carInfo}>
             <p><strong>Marca:</strong> {currentCar.marca || "Desconhecido"}</p>
             <p><strong>Modelo:</strong> {currentCar.modelo || "Desconhecido"}</p>
-            <p><strong>Ano:</strong> {currentCar.ano || "Desconhecido"}</p>
             {"confianca" in currentCar && (
               <p>
                 <strong>Confiança:</strong>{" "}

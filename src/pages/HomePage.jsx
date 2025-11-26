@@ -216,8 +216,18 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     margin: '16px 0',
-    position: 'relative'
-  },
+    position: 'relative',
+    '::before': {
+      content: '""',
+      position: 'absolute',
+      top: '50%',
+      left: 0,
+      right: 0,
+      height: '1px',
+      background: 'rgba(255, 255, 255, 0.1)',
+      zIndex: 0
+    }
+  },
   separatorText: {
     color: '#bfdbfe',
     fontSize: '14px',
