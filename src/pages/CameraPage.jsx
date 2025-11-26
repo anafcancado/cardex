@@ -183,7 +183,7 @@ export default function CameraPage({
 const styles = {
   container: {
     height: "100vh",
-    background: "black",
+    background: 'linear-gradient(to bottom, #1e3a8a, #172554)',
     display: "flex",
     flexDirection: "column",
     justifyContent: "center",

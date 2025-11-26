@@ -7,8 +7,10 @@ import ResultPage from "./pages/ResultPage";
 import CardexPage from "./pages/CardexPage";
 import { identifyCar } from "./services/aiService";
 
+
 function AppContent() {
-  const [capturedCars, setCapturedCars] = useState([]);
+  const [capturedCars, setCapturedCars] = useState([]); // histórico
+  const [currentBatch, setCurrentBatch] = useState([]); // lote do envio atual
   const [screenshot, setScreenshot] = useState(null);
   const [capturedPhotos, setCapturedPhotos] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -17,7 +19,7 @@ function AppContent() {
   const canvasRef = useRef(null);
   const [stream, setStream] = useState(null);
   const [filter, setFilter] = useState("descobertos");
-  
+
   const navigate = useNavigate();
 
   const goTo = (page) => {
@@ -26,8 +28,8 @@ function AppContent() {
 
   const startCamera = async () => {
     try {
-      const mediaStream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: "environment" } 
+      const mediaStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "environment" }
       });
       setStream(mediaStream);
       if (videoRef.current) {
@@ -53,7 +55,7 @@ function AppContent() {
     const video = videoRef.current;
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
-    
+
     const ctx = canvas.getContext("2d");
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
     const imgData = canvas.toDataURL("image/png");
@@ -88,6 +90,8 @@ function AppContent() {
       const resultsArray = Array.isArray(results) ? results : [results];
 
       console.log("Resultados da API:", resultsArray);
+
+      setCurrentBatch(resultsArray);
 
       // Adicionar aos carros capturados (sem duplicatas)
       setCapturedCars((prevCars) => {
@@ -140,7 +144,7 @@ function AppContent() {
   return (
     <>
       <canvas ref={canvasRef} style={{ display: "none" }} />
-      
+
       {error && (
         <div style={{
           background: "#fee2e2",
@@ -158,13 +162,13 @@ function AppContent() {
           {error}
         </div>
       )}
-      
+
       <Routes>
         <Route path="/" element={<WelcomePage {...commonProps} />} />
         <Route path="/welcome" element={<WelcomePage {...commonProps} />} />
         <Route path="/home" element={<HomePage {...commonProps} />} />
         <Route path="/camera" element={<CameraPage {...commonProps} />} />
-        <Route path="/result" element={<ResultPage {...commonProps} />} />
+        <Route path="/result" element={<ResultPage {...commonProps} currentBatch={currentBatch} />} />
         <Route path="/cardex" element={<CardexPage {...commonProps} />} />
       </Routes>
     </>
